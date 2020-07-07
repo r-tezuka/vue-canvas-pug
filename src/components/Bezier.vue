@@ -12,16 +12,28 @@ div
     input#conditions.quadratic.rationalBezier(type='checkbox' v-model='conditions.quadratic.rationalBezier')
     label(for='conditions.quadratic.rationalBezier') rationalBezier
   p parameters
-  div(v-for='(vertex, index) in this.points.cubic.vertices')
-    p
-      div point{{index}} x:{{vertex.x}} y:{{vertex.y}} weight:
-        input(type='number', v-model='vertex.w')
-        input(type='range', max='10', step='0.1', v-model='vertex.w')
-  div(v-for='(handle, index) in this.points.cubic.handles')
-    p
-      div handle{{index}} x:{{handle.x}} y:{{handle.y}} weight:
-        input(type='number', v-model='handle.w')
-        input(type='range', max='10', step='0.1', v-model='handle.w')
+    p cubic: 
+    div(v-for='(vertex, index) in this.points.cubic.vertices')
+      p
+        div point{{index}} x:{{vertex.x}} y:{{vertex.y}} weight:
+          input(type='number', v-model='vertex.w')
+          input(type='range', max='10', step='0.1', v-model='vertex.w')
+    div(v-for='(handle, index) in this.points.cubic.handles')
+      p
+        div handle{{index}} x:{{handle.x}} y:{{handle.y}} weight:
+          input(type='number', v-model='handle.w')
+          input(type='range', max='10', step='0.1', v-model='handle.w')
+    p quadratic: 
+    div(v-for='(vertex, index) in this.points.quadratic.vertices')
+      p
+        div point{{index}} x:{{vertex.x}} y:{{vertex.y}} weight:
+          input(type='number', v-model='vertex.w')
+          input(type='range', max='10', step='0.1', v-model='vertex.w')
+    div(v-for='(handle, index) in this.points.quadratic.handles')
+      p
+        div handle{{index}} x:{{handle.x}} y:{{handle.y}} weight:
+          input(type='number', v-model='handle.w')
+          input(type='range', max='10', step='0.1', v-model='handle.w')
   canvas#canvas(@mousedown='onDown', @mouseup='onUp', @mouseout='onUp', @mousemove='onMove')
 </template>
 
@@ -35,8 +47,8 @@ export default {
           rationalBezier: true
         },
         quadratic: {
-          bezier: false,
-          rationalBezier: false
+          bezier: true,
+          rationalBezier: true
         }
       },
       points: {
@@ -82,14 +94,16 @@ export default {
           handles: [
             {
               x: 650,
-              y: 100,
+              y: 50,
               w: 1
             }
           ]
         }
       },
       cubicBezierCurve: [],
-      cubicRationalBezierCurve: []
+      cubicRationalBezierCurve: [],
+      quadraticBezierCurve: [],
+      quadraticRationalBezierCurve: []
     }
   },
   mounted() {
@@ -120,6 +134,26 @@ export default {
         }
         if (this.conditions.cubic.rationalBezier) {
           this.drawCubicRationalBezier();
+        }
+      }
+
+      if(this.conditions.quadratic.bezier || this.conditions.quadratic.rationalBezier){
+        this.ctx.fillRect(this.points.quadratic.handles[0].x-5, this.points.quadratic.handles[0].y-5, 10, 10);
+        this.ctx.strokeStyle = 'rgb(0, 0, 255)';
+        for(let i in this.points.quadratic.vertices) {
+          this.ctx.fillStyle = 'rgb(0, 0, 0)';
+          this.ctx.fillRect(this.points.quadratic.vertices[i].x-5, this.points.quadratic.vertices[i].y-5, 10, 10);
+          this.ctx.fillStyle = 'rgb(0, 0, 255)';
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.points.quadratic.vertices[i].x, this.points.quadratic.vertices[i].y);
+          this.ctx.lineTo(this.points.quadratic.handles[0].x, this.points.quadratic.handles[0].y)
+          this.ctx.stroke();
+        }
+        if (this.conditions.quadratic.bezier) {
+          this.drawQuadraticBezier();
+        }
+        if (this.conditions.quadratic.rationalBezier) {
+          this.drawQuadraticRationalBezier();
         }
       }
     },
@@ -182,28 +216,90 @@ export default {
       this.ctx.stroke();
     },
   
+    drawQuadraticBezier: function() {
+      this.quadraticBezierCurve = [];
+      for(let i = 0; i <= 100; i++) {
+        const t = 0.01*i;
+        const x0 = this.points.quadratic.vertices[0].x;
+        const x1 = this.points.quadratic.handles[0].x;
+        const x2 = this.points.quadratic.vertices[1].x;
+        const xt = (1-t)**2*x0+2*(1-t)*t*x1+t**2*x2;
+        const y0 = this.points.quadratic.vertices[0].y;
+        const y1 = this.points.quadratic.handles[0].y;
+        const y2 = this.points.quadratic.vertices[1].y;
+        const yt = (1-t)**2*y0+2*(1-t)*t*y1+t**2*y2;
+        this.quadraticBezierCurve.push({ x:xt, y:yt });
+      }
+      this.ctx.strokeStyle = 'rgb(0, 0, 0)';
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.quadraticBezierCurve[0].x, this.quadraticBezierCurve[0].y);
+      for(var j in this.quadraticBezierCurve) {
+        this.ctx.lineTo(this.quadraticBezierCurve[j].x, this.quadraticBezierCurve[j].y);
+      }
+      this.ctx.stroke();
+    },
+
+    drawQuadraticRationalBezier: function() {
+      this.quadraticRationalBezierCurve = [];
+      for(let i = 0; i <= 100; i++) {
+        const t = 0.01*i;
+        const w0 = this.points.quadratic.vertices[0].w;
+        const w1 = this.points.quadratic.handles[0].w;
+        const w2 = this.points.quadratic.vertices[1].w;
+        const x0 = this.points.quadratic.vertices[0].x;
+        const x1 = this.points.quadratic.handles[0].x;
+        const x2 = this.points.quadratic.vertices[1].x;
+        const xtc = (1-t)**2*x0*w0+2*(1-t)*t*x1*w1+t**2*x2*w2;
+        const xtp = (1-t)**2*w0+2*(1-t)*t*w1+t**2*w2;
+        const xt = xtc/xtp;
+        const y0 = this.points.quadratic.vertices[0].y;
+        const y1 = this.points.quadratic.handles[0].y;
+        const y2 = this.points.quadratic.vertices[1].y;
+        const ytc = (1-t)**2*y0*w0+2*(1-t)*t*y1*w1+t**2*y2*w2;
+        const ytp = (1-t)**2*w0+2*(1-t)*t*w1+t**2*w2;
+        const yt = ytc/ytp;
+        this.quadraticRationalBezierCurve.push({ x:xt, y:yt });
+      }
+      this.ctx.strokeStyle = 'rgb(255, 0, 0)';
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.quadraticRationalBezierCurve[0].x, this.quadraticRationalBezierCurve[0].y);
+      for(var j in this.quadraticRationalBezierCurve) {
+        this.ctx.lineTo(this.quadraticRationalBezierCurve[j].x, this.quadraticRationalBezierCurve[j].y);
+      }
+      this.ctx.stroke();
+    },
+
     onDown: function(e) {
       var offsetX = this.canvas.getBoundingClientRect().left;
       var offsetY = this.canvas.getBoundingClientRect().top;
 
       let x = e.clientX - offsetX;
       let y = e.clientY - offsetY;
-      for(var i in this.points.cubic.vertices) {
+      for(let i in this.points.cubic.vertices) {
         const point = this.points.cubic.vertices[i];
-        const handle = this.points.cubic.handles[i];
+        this.objDrag(point, x, y);
+      }
+      for(let i in this.points.cubic.handles) {
+        const point = this.points.cubic.handles[i];
+        this.objDrag(point, x, y);
+      }
+      for(let i in this.points.quadratic.vertices) {
+        const point = this.points.quadratic.vertices[i];
+        this.objDrag(point, x, y);
+      }
+      for(let i in this.points.quadratic.handles) {
+        const point = this.points.quadratic.handles[i];
+        this.objDrag(point, x, y);
+      }
+    },
+    
+    objDrag: function(point, x, y) {
         if (point.x-5 < x && (point.x + 5) > x && point.y-5 < y && (point.y + 5) > y) {
           this.dragging = true;
-          this.target = this.points.cubic.vertices[i]
+          this.target = point;
           this.relX = this.target.x - x;
           this.relY = this.target.y - y;
         }
-        if (handle.x-5 < x && (handle.x + 5) > x && handle.y-5 < y && (handle.y + 5) > y) {
-          this.dragging = true;
-          this.target = this.points.cubic.handles[i]
-          this.relX = this.target.x - x;
-          this.relY = this.target.y - y;
-        }
-      }
     },
 
     onMove: function(e) {
