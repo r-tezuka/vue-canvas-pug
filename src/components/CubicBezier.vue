@@ -1,15 +1,27 @@
-<template lang="pug">
+<template lang='pug'>
 div
-  p
+  p display 
+  p cubic: 
     input#conditions.cubic.bezier(type='checkbox' v-model='conditions.cubic.bezier')
-    label(for='conditions.cubic.bezier') display cubicBezier
-  p
+    label(for='conditions.cubic.bezier') bezier
     input#conditions.cubic.rationalBezier(type='checkbox' v-model='conditions.cubic.rationalBezier')
-    label(for='conditions.cubic.rationalBezier') display rationalBezier
+    label(for='conditions.cubic.rationalBezier') rationalBezier
+  p quadratic:
+    input#conditions.quadratic.bezier(type='checkbox' v-model='conditions.quadratic.bezier')
+    label(for='conditions.quadratic.bezier') bezier
+    input#conditions.quadratic.rationalBezier(type='checkbox' v-model='conditions.quadratic.rationalBezier')
+    label(for='conditions.quadratic.rationalBezier') rationalBezier
+  p parameters
   div(v-for='(vertex, index) in this.points.cubic.vertices')
-    p point{{index}} x:{{vertex.x}} y:{{vertex.y}} weight: <input v-model=vertex.w>
+    p
+      div point{{index}} x:{{vertex.x}} y:{{vertex.y}} weight:
+        input(type='number', v-model='vertex.w')
+        input(type='range', max='10', step='0.1', v-model='vertex.w')
   div(v-for='(handle, index) in this.points.cubic.handles')
-    p handle{{index}} x:{{handle.x}} y:{{handle.y}} weight: <input v-model="handle.w"> 
+    p
+      div handle{{index}} x:{{handle.x}} y:{{handle.y}} weight:
+        input(type='number', v-model='handle.w')
+        input(type='range', max='10', step='0.1', v-model='handle.w')
   canvas#canvas(@mousedown='onDown', @mouseup='onUp', @mouseout='onUp', @mousemove='onMove')
 </template>
 
@@ -19,8 +31,8 @@ export default {
     return {
       conditions: {
         cubic: {
-          bezier: false,
-          rationalBezier: false
+          bezier: true,
+          rationalBezier: true
         },
         quadratic: {
           bezier: false,
@@ -82,7 +94,6 @@ export default {
   },
   mounted() {
     this.dragging = false;
-    this.conditions.cubic.bezier = true;
     this.draw();
   },
   methods: {
@@ -92,22 +103,24 @@ export default {
       this.canvas.height = 800;
       document.body.appendChild(this.canvas);
       this.ctx = this.canvas.getContext('2d');
-      for(let i in this.points.cubic.vertices) {
-        this.ctx.fillStyle = "rgb(0, 0, 0)";
-        this.ctx.fillRect(this.points.cubic.vertices[i].x-5, this.points.cubic.vertices[i].y-5, 10, 10);
-        this.ctx.fillStyle = "rgb(0, 0, 255)";
-        this.ctx.fillRect(this.points.cubic.handles[i].x-5, this.points.cubic.handles[i].y-5, 10, 10);
-        this.ctx.strokeStyle = "rgb(0, 0, 255)";
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.points.cubic.vertices[i].x, this.points.cubic.vertices[i].y);
-        this.ctx.lineTo(this.points.cubic.handles[i].x, this.points.cubic.handles[i].y)
-        this.ctx.stroke();
-      }
-      if (this.conditions.cubic.bezier) {
-        this.drawCubicBezier();
-      }
-      if (this.conditions.cubic.rationalBezier) {
-        this.drawRationalBezier();
+      if(this.conditions.cubic.bezier || this.conditions.cubic.rationalBezier){
+        for(let i in this.points.cubic.vertices) {
+          this.ctx.fillStyle = 'rgb(0, 0, 0)';
+          this.ctx.fillRect(this.points.cubic.vertices[i].x-5, this.points.cubic.vertices[i].y-5, 10, 10);
+          this.ctx.fillStyle = 'rgb(0, 0, 255)';
+          this.ctx.fillRect(this.points.cubic.handles[i].x-5, this.points.cubic.handles[i].y-5, 10, 10);
+          this.ctx.strokeStyle = 'rgb(0, 0, 255)';
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.points.cubic.vertices[i].x, this.points.cubic.vertices[i].y);
+          this.ctx.lineTo(this.points.cubic.handles[i].x, this.points.cubic.handles[i].y)
+          this.ctx.stroke();
+        }
+        if (this.conditions.cubic.bezier) {
+          this.drawCubicBezier();
+        }
+        if (this.conditions.cubic.rationalBezier) {
+          this.drawCubicRationalBezier();
+        }
       }
     },
 
@@ -127,7 +140,7 @@ export default {
         const yt = (1-t)**3*y0+3*(1-t)**2*t*y1+3*(1-t)*t**2*y2+t**3*y3;
         this.cubicBezierCurve.push({ x:xt, y:yt });
       }
-      this.ctx.strokeStyle = "rgb(0, 0, 0)";
+      this.ctx.strokeStyle = 'rgb(0, 0, 0)';
       this.ctx.beginPath();
       this.ctx.moveTo(this.cubicBezierCurve[0].x, this.cubicBezierCurve[0].y);
       for(var j in this.cubicBezierCurve) {
@@ -136,7 +149,7 @@ export default {
       this.ctx.stroke();
     },
 
-    drawRationalBezier: function() {
+    drawCubicRationalBezier: function() {
       this.cubicRationalBezierCurve = [];
       for(let i = 0; i <= 100; i++) {
         const t = 0.01*i;
@@ -160,7 +173,7 @@ export default {
         const yt = ytc/ytp;
         this.cubicRationalBezierCurve.push({ x:xt, y:yt });
       }
-      this.ctx.strokeStyle = "rgb(255, 0, 0)";
+      this.ctx.strokeStyle = 'rgb(255, 0, 0)';
       this.ctx.beginPath();
       this.ctx.moveTo(this.cubicRationalBezierCurve[0].x, this.cubicRationalBezierCurve[0].y);
       for(var j in this.cubicRationalBezierCurve) {
