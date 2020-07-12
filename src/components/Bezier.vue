@@ -8,11 +8,11 @@ div
     div(v-for='(vertex, index) in this.cubic.vertices')
       div point{{index}} x:{{vertex.x}} y:{{vertex.y}} weight:
         input(type='number', v-model='vertex.w')
-        input(type='range', max='10', step='0.1', v-model='vertex.w')
+        input(type='range', max=10, step=0.1, v-model='vertex.w')
     div(v-for='(handle, index) in this.cubic.handles')
       div handle{{index}} x:{{handle.x}} y:{{handle.y}} weight:
         input(type='number', v-model='handle.w')
-        input(type='range', max='10', step='0.1', v-model='handle.w')
+        input(type='range', max=10, step=0.1, v-model='handle.w')
   span(class="col-2") quadratic:
     input#quadratic.bezier(type='checkbox' v-model='quadratic.bezier')
     label(for='quadratic.bezier') bezier
@@ -21,17 +21,17 @@ div
     div(v-for='(vertex, index) in this.quadratic.vertices')
       div point{{index}} x:{{vertex.x}} y:{{vertex.y}} weight:
         input(type='number', v-model='vertex.w')
-        input(type='range', max='10', step='0.1', v-model='vertex.w')
+        input(type='range', max=10, step=0.1, v-model='vertex.w')
     div(v-for='(handle, index) in this.quadratic.handles')
       div handle{{index}} x:{{handle.x}} y:{{handle.y}} weight:
         input(type='number', v-model='handle.w')
-        input(type='range', max='10', step='0.1', v-model='handle.w')
+        input(type='range', max=10, step=0.1, v-model='handle.w')
   p
     div curvature:
       input#curvature.circle(type='checkbox' v-model='curvature.circle')
       label(for='curvature.circle') circle 
       label(for='curvature.t') position
-      input(type='range', max='1', step='0.01', v-model='curvature.t')
+      input(type='range', max=1, step=0.01, v-model='curvature.t')
       label(for='curvature.value') {{ curvature.value }}
       div radius: {{ curvature.r }}
     label(for='curvature.dimension') dimension: 
@@ -281,7 +281,14 @@ export default {
     },
 
     drawCurvatureCircle: function(curve) {
-      const i = Math.round(this.curvature.t*1/this.dt);
+      var i = Math.round(this.curvature.t*1/this.dt);
+      this.drawPoint(curve[i].x, curve[i].y, 'rgb(0, 255, 0)');
+      if (i == 0){
+        i = 1;
+      }
+      if (i == 1/this.dt){
+        i = 1/this.dt - 1;
+      }
       var circle;
       const dx = curve[i+1].x - curve[i-1].x;
       const d2x = curve[i+1].x + curve[i-1].x - 2*curve[i].x;
@@ -292,8 +299,6 @@ export default {
       const cy = curve[i].y + ((dx/dt)**2+(dy/dt)**2)/(dx/dt*d2y/dt/dt-dy/dt*d2x/dt/dt)*dx/dt;
       const cr = Math.abs((((dx/dt)**2 + (dy/dt)**2)**1.5)/(dx/dt*d2y/dt/dt-dy/dt*d2x/dt/dt));
       circle = ({ x:cx, y:cy, r:cr });
-
-      this.drawPoint(curve[i].x, curve[i].y, 'rgb(0, 255, 0)');
       this.drawPoint(circle.x, circle.y, 'rgb(0, 255, 0)');
       this.ctx.strokeStyle = 'rgb(0, 255, 0)';
       this.ctx.beginPath();
