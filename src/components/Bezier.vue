@@ -1,6 +1,6 @@
 <template lang='pug'>
 div
-  span(class="col-1") cubic: 
+  span(class="col-1") 3次ベジェ曲線/ cubic: 
     input#cubic.bezier(type='checkbox' v-model='cubic.bezier')
     label(for='cubic.bezier') bezier
     input#cubic.rationalBezier(type='checkbox' v-model='cubic.rationalBezier')
@@ -13,7 +13,7 @@ div
       div handle{{index}} x:{{handle.x}} y:{{handle.y}} weight:
         input(type='number', v-model='handle.w')
         input(type='range', max=10, step=0.1, v-model='handle.w')
-  span(class="col-2") quadratic:
+  span(class="col-2") 2次ベジェ曲線 /quadratic: 
     input#quadratic.bezier(type='checkbox' v-model='quadratic.bezier')
     label(for='quadratic.bezier') bezier
     input#quadratic.rationalBezier(type='checkbox' v-model='quadratic.rationalBezier')
@@ -27,13 +27,14 @@ div
         input(type='number', v-model='handle.w')
         input(type='range', max=10, step=0.1, v-model='handle.w')
   p
-    div curvature:
+    div 曲率 /curvature: 
+      label(for='curvature.value') {{ curvature.value }}
+      div
+      label(for='curvature.t') position: 
+      input(type='range', max=1, step=0.01, v-model='curvature.t')
       input#curvature.circle(type='checkbox' v-model='curvature.circle')
       label(for='curvature.circle') circle 
-      label(for='curvature.t') position
-      input(type='range', max=1, step=0.01, v-model='curvature.t')
-      label(for='curvature.value') {{ curvature.value }}
-      div radius: {{ curvature.r }}
+      div radius of curvature: {{ curvature.r }}
     label(for='curvature.dimension') dimension: 
       input#curvature.dimension.cubic(type='radio' v-model='curvature.dimension' value='cubic')
       label(for='curvature.dimension.cubic') cubic 
@@ -389,10 +390,10 @@ export default {
 <style scoped>
 .col-1 {
     display: inline-block;
-    width: 50%;
+    width: 500px;
 }
 .col-2 {
     display: inline-block;
-    width: 50%;
+    width: 500px;
 }
 </style>
