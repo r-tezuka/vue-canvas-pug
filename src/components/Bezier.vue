@@ -46,7 +46,7 @@ div
         label(for='curvature.curveType.bezier') bezier 
         input#curvature.curveType.rationalBezier(type='radio' v-model='curvature.curveType' value='rationalBezier')
         label(for='curvature.curveType.rationalBezier') rationalBezier       
-    span(class="col-4")  3次有理ベジェ曲線をピッチでグレーディング /grading cubic rational bezier by pitch:
+    span(class="col-4")  3次有理ベジェをピッチでグレーディング /grading cubic rational bezier by pitch:
       div
         label(for='cubic.numOfSize') number of sizes: 
         input(type='number', v-model='cubic.numOfSize',style='width:40px;')
@@ -490,7 +490,7 @@ export default {
 }
 .col-4 {
     display: inline-block;
-    width: 600px;
+    width: 650px;
     vertical-align:top;
 }
 </style>
