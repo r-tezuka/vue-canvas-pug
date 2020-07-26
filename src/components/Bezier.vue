@@ -191,102 +191,79 @@ export default {
     getAngle: function(v0, v1) {
       return (this.getRadian(v0, v1) * 180) / Math.PI
     },
-
     drawCurve: function(curve, color) {
       this.ctx.strokeStyle = color
       this.ctx.beginPath()
       this.ctx.moveTo(curve[0].x, curve[0].y)
-      for (var i in curve) {
-        this.ctx.lineTo(curve[i].x, curve[i].y)
-      }
+      curve.forEach(p => {
+        this.ctx.lineTo(p.x, p.y)
+      })
       this.ctx.stroke()
     },
 
-    drawPoint: function(x, y, color) {
+    drawPoint: function(p, color) {
       this.ctx.fillStyle = color
-      this.ctx.fillRect(x - 5, y - 5, 10, 10)
+      this.ctx.fillRect(p.x - 5, p.y - 5, 10, 10)
     },
+
+    drawHandle: function(p, h, color) {
+      this.drawPoint(h, color)
+      this.ctx.strokeStyle = color
+      this.ctx.beginPath()
+      this.ctx.moveTo(p.x, p.y)
+      this.ctx.lineTo(h.x, h.y)
+      this.ctx.stroke()
+    },
+
     draw: function() {
       this.canvas = document.getElementById('canvas')
       this.canvas.width = 1200
       this.canvas.height = 800
-      document.body.appendChild(this.canvas)
+      //document.body.appendChild(this.canvas)
       this.ctx = this.canvas.getContext('2d')
-      if (this.cubic.bezier || this.cubic.rationalBezier) {
-        for (let i in this.cubic.vertices) {
-          this.drawPoint(
-            this.cubic.vertices[i].x,
-            this.cubic.vertices[i].y,
-            'rgb(0, 0, 0)'
-          )
-          this.drawPoint(
-            this.cubic.handles[i].x,
-            this.cubic.handles[i].y,
-            'rgb(0, 0, 255)'
-          )
-          this.ctx.strokeStyle = 'rgb(0, 0, 255)'
-          this.ctx.beginPath()
-          this.ctx.moveTo(this.cubic.vertices[i].x, this.cubic.vertices[i].y)
-          this.ctx.lineTo(this.cubic.handles[i].x, this.cubic.handles[i].y)
-          this.ctx.stroke()
-        }
-        if (this.cubic.bezier) {
-          const curve = this.getCubicBezier()
-          this.drawCurve(curve, 'rgb(0, 0, 0)')
-          if (
-            this.curvature.circle &&
-            this.curvature.dimension == 'cubic' &&
-            this.curvature.curveType == 'bezier'
-          ) {
-            this.drawCurvatureCircle(curve)
-          }
-        }
-        if (this.cubic.rationalBezier) {
-          const curve = this.getCubicRationalBezier(
-            this.cubic.vertices[0],
-            this.cubic.vertices[1],
-            this.cubic.handles[0],
-            this.cubic.handles[1]
-          )
-          this.drawCurve(curve, 'rgb(255, 0, 0)')
-          if (
-            this.curvature.circle &&
-            this.curvature.dimension == 'cubic' &&
-            this.curvature.curveType == 'rationalBezier'
-          ) {
-            this.drawCurvatureCircle(curve)
-          }
-          if (this.cubic.gradingResult) {
-            this.executeGrading()
-          }
-        }
-      }
-
-      if (this.quadratic.bezier || this.quadratic.rationalBezier) {
-        this.drawPoint(
-          this.quadratic.handles[0].x,
-          this.quadratic.handles[0].y,
+      for (let i in this.cubic.vertices) {
+        this.drawPoint(this.cubic.vertices[i], 'rgb(0, 0, 0)')
+        this.drawHandle(
+          this.cubic.vertices[i],
+          this.cubic.handles[i],
           'rgb(0, 0, 255)'
         )
-        this.ctx.strokeStyle = 'rgb(0, 0, 255)'
-        for (let i in this.quadratic.vertices) {
-          this.drawPoint(
-            this.quadratic.vertices[i].x,
-            this.quadratic.vertices[i].y,
-            'rgb(0, 0, 0)'
-          )
-          this.ctx.fillStyle = 'rgb(0, 0, 255)'
-          this.ctx.beginPath()
-          this.ctx.moveTo(
-            this.quadratic.vertices[i].x,
-            this.quadratic.vertices[i].y
-          )
-          this.ctx.lineTo(
-            this.quadratic.handles[0].x,
-            this.quadratic.handles[0].y
-          )
-          this.ctx.stroke()
+      }
+      if (this.cubic.bezier) {
+        const curve = this.getCubicBezier()
+        this.drawCurve(curve, 'rgb(0, 0, 0)')
+        if (
+          this.curvature.circle &&
+          this.curvature.dimension == 'cubic' &&
+          this.curvature.curveType == 'bezier'
+        ) {
+          this.drawCurvatureCircle(curve)
         }
+      }
+      if (this.cubic.rationalBezier) {
+        const curve = this.getCubicRationalBezier(
+          this.cubic.vertices[0],
+          this.cubic.vertices[1],
+          this.cubic.handles[0],
+          this.cubic.handles[1]
+        )
+        this.drawCurve(curve, 'rgb(255, 0, 0)')
+        if (
+          this.curvature.circle &&
+          this.curvature.dimension == 'cubic' &&
+          this.curvature.curveType == 'rationalBezier'
+        ) {
+          this.drawCurvatureCircle(curve)
+        }
+        if (this.cubic.gradingResult) {
+          this.executeGrading()
+        }
+      }
+      if (this.quadratic.bezier || this.quadratic.rationalBezier) {
+        this.quadratic.vertices.forEach(v => {
+          this.drawPoint(v, 'rgb(0, 0, 0)')
+          this.drawHandle(v, this.quadratic.handles[0], 'rgb(0, 0, 255)')
+        })
         if (this.quadratic.bezier) {
           const curve = this.getQuadraticBezier()
           this.drawCurve(curve, 'rgb(0, 0, 0)')
@@ -429,7 +406,7 @@ export default {
 
     drawCurvatureCircle: function(curve) {
       var i = Math.round((this.curvature.t * 1) / this.dt)
-      this.drawPoint(curve[i].x, curve[i].y, 'rgb(0, 255, 0)')
+      this.drawPoint(curve[i], 'rgb(0, 255, 0)')
       if (i == 0) {
         i = 1
       }
@@ -459,7 +436,7 @@ export default {
           (((dx / dt) * d2y) / dt / dt - ((dy / dt) * d2x) / dt / dt)
       )
       circle = { x: cx, y: cy, r: cr }
-      this.drawPoint(circle.x, circle.y, 'rgb(0, 255, 0)')
+      this.drawPoint(circle, 'rgb(0, 255, 0)')
       this.ctx.strokeStyle = 'rgb(0, 255, 0)'
       this.ctx.beginPath()
       this.ctx.moveTo(curve[i].x, curve[i].y)
