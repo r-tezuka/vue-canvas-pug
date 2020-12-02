@@ -1,14 +1,14 @@
 <template lang="pug">
 #app
-  Bezier
+  Sample
 </template>
 
 <script>
-import Bezier from './components/Bezier.vue'
+import Sample from './components/Sample.vue'
 export default {
   name: 'App',
   components: {
-    Bezier
+    Sample
   }
 }
 </script>
